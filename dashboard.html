@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vaishnav — Cut to 76kg</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2027;
+    --panel-2: #232b35;
+    --accent: #4ade80;
+    --accent-dim: #166534;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #2d3742;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 16px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  #user-name {
+    color: var(--accent);
+    border-bottom: 1px dashed transparent;
+    outline: none;
+    padding: 0 2px;
+    cursor: text;
+    transition: border-color 0.15s;
+  }
+  #user-name:hover { border-bottom-color: var(--accent); }
+  #user-name:focus { border-bottom-color: var(--accent); background: rgba(74,222,128,0.08); border-radius: 3px; }
+  h2 { font-size: 16px; margin-bottom: 12px; color: var(--accent); }
+  h3 { font-size: 14px; margin-bottom: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 16px;
+    background: none;
+    color: var(--muted);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+
+  .panel {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  /* Dashboard cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .card { background: var(--panel-2); padding: 16px; border-radius: 10px; border: 1px solid var(--border); }
+  .card-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .card-value { font-size: 28px; font-weight: 700; margin-top: 6px; }
+  .card-value.green { color: var(--accent); }
+  .card-value.red { color: var(--danger); }
+  .card-value.amber { color: var(--warn); }
+  .card-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .progress-bar {
+    background: var(--panel-2);
+    border-radius: 8px;
+    height: 24px;
+    overflow: hidden;
+    margin: 8px 0;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    transition: width 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* Forms */
+  input, select, textarea {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  input[type="checkbox"] { width: auto; cursor: pointer; transform: scale(1.3); accent-color: var(--accent); }
+  button {
+    background: var(--accent);
+    color: #0f1419;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button:hover { opacity: 0.9; }
+  button.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  button.danger { background: var(--danger); color: #fff; }
+
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 100px; }
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--panel-2); padding: 10px 8px; text-align: left; font-weight: 600; font-size: 12px; color: var(--muted); text-transform: uppercase; }
+  td { padding: 8px; border-bottom: 1px solid var(--border); }
+  td input { padding: 4px 6px; font-size: 12px; }
+  tr.deload { background: rgba(245, 158, 11, 0.08); }
+  tr.deload td:first-child::after { content: " ⚠ DELOAD"; color: var(--warn); font-size: 10px; font-weight: 700; }
+
+  /* Checklist */
+  .checklist-grid { display: grid; grid-template-columns: 120px repeat(6, 1fr) 60px; gap: 4px; align-items: center; font-size: 12px; }
+  .checklist-grid > div { padding: 6px 4px; text-align: center; }
+  .checklist-grid .day-label { text-align: left; font-weight: 600; color: var(--text); }
+  .checklist-grid .header { background: var(--panel-2); border-radius: 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; }
+  .score-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 12px; }
+  .score-6 { background: var(--accent-dim); color: var(--accent); }
+  .score-4 { background: rgba(245,158,11,0.2); color: var(--warn); }
+  .score-low { background: rgba(239,68,68,0.2); color: var(--danger); }
+
+  .session-block { margin-bottom: 24px; }
+  .session-title { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--panel-2); border-radius: 6px; margin-bottom: 8px; }
+  .session-title strong { color: var(--accent); }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .save-status { color: var(--muted); font-size: 12px; padding: 8px; }
+  .save-status.saved { color: var(--accent); }
+
+  canvas { max-height: 300px; }
+
+  @media (max-width: 600px) {
+    .checklist-grid { grid-template-columns: 80px repeat(6, 1fr) 50px; font-size: 10px; }
+    .card-value { font-size: 22px; }
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .quick-log { background: var(--panel-2); padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+  .streak-flame { font-size: 18px; }
+
+  /* Today hero */
+  .today-hero { margin-top: 8px; }
+  .today-session { font-size: 32px; font-weight: 800; color: var(--accent); margin-bottom: 6px; line-height: 1.1; }
+  .today-session.rest { color: var(--warn); }
+  .today-session.cardio { color: #60a5fa; }
+  .today-meta { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .today-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .today-actions button { font-size: 13px; padding: 8px 14px; }
+
+  /* Schedule editor */
+  .sched-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .sched-row strong { color: var(--text); }
+  .sched-row.today-row { background: rgba(74, 222, 128, 0.08); border-radius: 6px; padding: 8px 12px; }
+
+  /* Progressive overload pill in workout log */
+  .overload-pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .overload-up { background: rgba(74,222,128,0.18); color: var(--accent); }
+  .overload-flat { background: rgba(156,163,175,0.18); color: var(--muted); }
+  .overload-down { background: rgba(239,68,68,0.18); color: var(--danger); }
+  .overload-pr { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #1a2027; }
+  .last-session-hint { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+
+  /* Backup tab specifics */
+  .panel-inset { background: var(--panel-2); padding: 16px; border-radius: 8px; }
+  .warning-box { background: rgba(245,158,11,0.1); border: 1px solid var(--warn); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; }
+  .warning-box code { background: var(--panel-2); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  .gdrive-status-ok { color: var(--accent); }
+
+  /* Plan editor modal */
+  .modal-backdrop { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+  .modal-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-width: 800px; width: 100%; margin-top: 40px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .plan-row { display: grid; grid-template-columns: 30px 2fr 1fr 60px 60px auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .plan-row .drag-handle { cursor: move; color: var(--muted); text-align: center; font-size: 18px; user-select: none; }
+  .plan-row input { padding: 6px 8px; font-size: 13px; }
+  .plan-row .move-btns button { padding: 4px 6px; font-size: 11px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  .plan-row .delete-btn { padding: 6px 10px; font-size: 12px; }
+  @media (max-width: 600px) {
+    .plan-row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
+    .plan-row .drag-handle { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🏋️ <span id="user-name" contenteditable="true" spellcheck="false" title="Click to edit your name">Vaishnav</span>'s Cut to 76 kg</h1>
+<p class="subtitle">Intermediate cut · 87.5 kg → 76 kg · ~16 weeks</p>
+
+<div class="tabs">
+  <button class="tab active" data-tab="dashboard">Dashboard</button>
+  <button class="tab" data-tab="workout">Workout Log</button>
+  <button class="tab" data-tab="progress">Progress</button>
+  <button class="tab" data-tab="weight">Weight</button>
+  <button class="tab" data-tab="checklist">Daily Checklist</button>
+  <button class="tab" data-tab="review">Weekly Review</button>
+  <button class="tab" data-tab="schedule">Schedule</button>
+  <button class="tab" data-tab="backup">Backup</button>
+  <button class="tab" data-tab="data">Data</button>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="tab-dashboard" class="tab-content active">
+  <div class="panel" id="today-panel">
+    <h3>Today · <span id="today-date"></span></h3>
+    <div class="today-hero">
+      <div class="today-session" id="today-session">—</div>
+      <div class="today-meta" id="today-meta"></div>
+      <div class="today-actions" id="today-actions"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Goal Progress</h3>
+    <div class="progress-bar">
+      <div id="goal-progress" class="progress-fill" style="width: 0%">0%</div>
+    </div>
+    <div class="row">
+      <div><span class="card-label">Start</span><div class="card-value">87.5 kg</div></div>
+      <div><span class="card-label">Current</span><div class="card-value" id="current-weight">—</div></div>
+      <div><span class="card-label">Goal</span><div class="card-value green">76.0 kg</div></div>
+      <div><span class="card-label">To Go</span><div class="card-value amber" id="to-go">—</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">7-Day Avg Weight</div>
+      <div class="card-value" id="avg-7d">—</div>
+      <div class="card-sub" id="trend-7d">No data yet</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Workout Streak</div>
+      <div class="card-value" id="streak">0 <span class="streak-flame">🔥</span></div>
+      <div class="card-sub">Days without missing twice</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Sessions This Week</div>
+      <div class="card-value" id="sessions-week">0 / 5</div>
+      <div class="card-sub">Lifting days completed</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Adherence (Last 14 days)</div>
+      <div class="card-value" id="adherence">—</div>
+      <div class="card-sub">Target: 80%+</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Weight Trend</h2>
+    <canvas id="weightChart"></canvas>
+  </div>
+
+  <div class="panel">
+    <h2>Quick Log</h2>
+    <div class="quick-log">
+      <div class="row">
+        <div>
+          <label>Today's Weight (kg)</label>
+          <input type="number" step="0.1" id="quick-weight" placeholder="e.g. 87.3" />
+        </div>
+        <div style="align-self: flex-end;">
+          <button onclick="quickLogWeight()">Save Weight</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WORKOUT LOG ============ -->
+<div id="tab-workout" class="tab-content">
+  <div class="panel">
+    <div class="row">
+      <div>
+        <label>Week</label>
+        <select id="workout-week" onchange="renderWorkoutLog()"></select>
+      </div>
+      <div>
+        <label>Session</label>
+        <select id="workout-session" onchange="renderWorkoutLog()">
+          <option value="Push">Day 1 — Push</option>
+          <option value="Pull">Day 2 — Pull</option>
+          <option value="Legs-Quad">Day 3 — Legs (Quad)</option>
+          <option value="Upper">Day 4 — Upper</option>
+          <option value="Lower-Post">Day 5 — Lower (Post)</option>
+        </select>
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="workout-date" onchange="saveWorkoutDate()" />
+      </div>
+    </div>
+    <div class="row" style="margin-top: 12px;">
+      <button class="secondary" onclick="openPlanEditor()">⚙ Edit Plan (Add / Remove / Reorder Exercises)</button>
+    </div>
+  </div>
+
+  <div class="panel" id="workout-table-container"></div>
+
+  <!-- Plan Editor Modal -->
+  <div id="plan-editor-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this) closePlanEditor()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="plan-editor-title">Edit Plan</h2>
+        <button class="secondary" onclick="closePlanEditor()">✕ Close</button>
+      </div>
+      <p style="color:var(--muted); font-size: 13px; margin-bottom: 12px;">
+        Changes apply to <strong>all weeks</strong>. Existing logged sets stay attached to their original exercise position — re-order with care if you've already logged data.
+      </p>
+      <div id="plan-editor-list"></div>
+      <div class="row" style="margin-top: 12px;">
+        <button onclick="addPlanExercise()">+ Add Exercise</button>
+        <button class="secondary" onclick="resetPlanForSession()">Reset This Session to Default</button>
+      </div>
+      <div style="margin-top: 16px; text-align: right;">
+        <button onclick="savePlanEdits()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WEIGHT ============ -->
+<div id="tab-weight" class="tab-content">
+  <div class="panel">
+    <h2>Weight Log</h2>
+    <div class="row" style="margin-bottom: 12px;">
+      <div>
+        <label>Date</label>
+        <input type="date" id="weight-date" />
+      </div>
+      <div>
+        <label>Weight (kg)</label>
+        <input type="number" step="0.1" id="weight-value" placeholder="87.3" />
+      </div>
+      <div style="align-self: flex-end;">
+        <button onclick="addWeight()">Add Entry</button>
+      </div>
+    </div>
+    <table id="weight-table">
+      <thead>
+        <tr><th>Date</th><th>Weight</th><th>7-Day Avg</th><th>Δ vs Start</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ CHECKLIST ============ -->
+<div id="tab-checklist" class="tab-content">
+  <div class="panel">
+    <div class="row" style="margin-bottom: 16px;">
+      <div>
+        <label>Week</label>
+        <select id="checklist-week" onchange="renderChecklist()"></select>
+      </div>
+    </div>
+    <div id="checklist-container"></div>
+  </div>
+</div>
+
+<!-- ============ WEEKLY REVIEW ============ -->
+<div id="tab-review" class="tab-content">
+  <div class="panel">
+    <div class="row" style="margin-bottom: 16px;">
+      <div>
+        <label>Week</label>
+        <select id="review-week" onchange="renderReview()"></select>
+      </div>
+    </div>
+    <div id="review-form"></div>
+  </div>
+</div>
+
+<!-- ============ SCHEDULE ============ -->
+<div id="tab-schedule" class="tab-content">
+  <div class="panel">
+    <h2>Weekly Schedule</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">
+      Map each day to a session. Updates the dashboard "Today" card and the checklist day order automatically.
+    </p>
+    <div id="schedule-editor"></div>
+    <div class="row" style="margin-top: 16px;">
+      <button onclick="resetScheduleDefault()" class="secondary">Reset to Default</button>
+      <button onclick="saveScheduleAndRefresh()">Save Schedule</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROGRESS ============ -->
+<div id="tab-progress" class="tab-content">
+  <div class="panel">
+    <h2>Progressive Overload Tracker</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">
+      Tracks PRs, estimated 1RM trends, and total volume per exercise. Log your sets as <strong>weight × reps</strong> (e.g. <code>60×8</code>, <code>60x8</code>, or <code>60*8</code>).
+    </p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">PRs Set</div>
+        <div class="card-value green" id="pr-count">0</div>
+        <div class="card-sub" id="pr-recent">No PRs yet</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sessions Logged</div>
+        <div class="card-value" id="sessions-logged">0</div>
+        <div class="card-sub">Total workouts in log</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Strength Retention</div>
+        <div class="card-value" id="strength-retention">—</div>
+        <div class="card-sub">Avg compound 1RM trend</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="margin-bottom: 12px;">
+      <div>
+        <label>Pick Exercise</label>
+        <select id="progress-exercise" onchange="renderProgressChart()"></select>
+      </div>
+      <div>
+        <label>Metric</label>
+        <select id="progress-metric" onchange="renderProgressChart()">
+          <option value="e1rm">Estimated 1RM (kg)</option>
+          <option value="topSet">Top Set Weight (kg)</option>
+          <option value="volume">Total Volume (kg)</option>
+        </select>
+      </div>
+    </div>
+    <canvas id="progressChart"></canvas>
+    <div id="progress-summary" style="margin-top: 12px; color: var(--muted); font-size: 13px;"></div>
+  </div>
+
+  <div class="panel">
+    <h2>All-Time Personal Records</h2>
+    <table id="pr-table">
+      <thead>
+        <tr><th>Exercise</th><th>Best Set</th><th>Est. 1RM</th><th>Date</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ BACKUP ============ -->
+<div id="tab-backup" class="tab-content">
+  <div class="panel">
+    <h2>Google Drive Backup</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">
+      Auto-saves a JSON backup of all your data to your Google Drive every Sunday (and on demand). Sign in once — token persists across sessions.
+    </p>
+
+    <div id="gdrive-warning" class="warning-box" style="display:none;">
+      <strong>⚠ Setup needed</strong><br/>
+      Google OAuth requires this page to be served from <code>http://localhost</code> or <code>https://</code> — not <code>file://</code>.<br/>
+      <strong>Fastest fix:</strong> Open VS Code → install <em>"Live Server"</em> extension → right-click <code>dashboard.html</code> → <em>"Open with Live Server"</em>. Or host it free on GitHub Pages.
+    </div>
+
+    <div id="gdrive-setup" class="panel-inset">
+      <h3>1. One-Time Setup</h3>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+        You need a free <strong>Google OAuth Client ID</strong> (5-min setup):
+      </p>
+      <ol style="font-size: 13px; color: var(--muted); padding-left: 20px; margin-bottom: 12px; line-height: 1.7;">
+        <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: var(--accent);">console.cloud.google.com/apis/credentials</a></li>
+        <li>Create a Project → enable <strong>Google Drive API</strong></li>
+        <li>Credentials → Create Credentials → <strong>OAuth Client ID</strong> → Web Application</li>
+        <li>Under <em>Authorized JavaScript origins</em>, add the URL where you'll open this page (e.g. <code>http://127.0.0.1:5500</code> for VS Code Live Server, or your GitHub Pages URL)</li>
+        <li>Copy the Client ID and paste below</li>
+      </ol>
+      <label>Google OAuth Client ID</label>
+      <input type="text" id="gdrive-client-id" placeholder="123456-abc.apps.googleusercontent.com" />
+      <div class="row" style="margin-top: 8px;">
+        <button onclick="saveClientId()">Save Client ID</button>
+      </div>
+    </div>
+
+    <div id="gdrive-actions" style="margin-top: 16px;">
+      <h3>2. Sign In & Backup</h3>
+      <div id="gdrive-status" style="margin: 12px 0; padding: 10px; background: var(--panel-2); border-radius: 6px; font-size: 13px;">Not signed in.</div>
+      <div class="row">
+        <button onclick="gdriveSignIn()" id="gdrive-signin-btn">Sign in with Google</button>
+        <button class="secondary" onclick="gdriveSignOut()" id="gdrive-signout-btn" style="display:none">Sign Out</button>
+      </div>
+      <div class="row" style="margin-top: 12px;">
+        <button onclick="gdriveBackupNow()" id="gdrive-backup-btn" disabled>📤 Backup Now</button>
+        <button class="secondary" onclick="gdriveRestoreLatest()" id="gdrive-restore-btn" disabled>📥 Restore Latest Backup</button>
+      </div>
+      <div style="margin-top: 16px;">
+        <label><input type="checkbox" id="auto-backup-toggle" onchange="toggleAutoBackup(this.checked)" /> Auto-backup every Sunday (when dashboard is open)</label>
+      </div>
+      <div id="gdrive-last-backup" style="margin-top: 12px; color: var(--muted); font-size: 13px;"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Local Backups (always works)</h3>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">
+      Download your full data as JSON. Save it anywhere (Drive, OneDrive, USB).
+    </p>
+    <button onclick="exportData()">📥 Download Backup Now</button>
+  </div>
+</div>
+
+<!-- ============ DATA ============ -->
+<div id="tab-data" class="tab-content">
+  <div class="panel">
+    <h2>Backup & Restore</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px;">
+      Data is saved in your browser's local storage. Export regularly so you don't lose it if you clear browser data.
+    </p>
+    <div class="toolbar">
+      <button onclick="exportData()">📥 Export All Data (JSON)</button>
+      <button class="secondary" onclick="document.getElementById('import-file').click()">📤 Import Data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
+      <button class="danger" onclick="resetAll()">⚠ Reset Everything</button>
+    </div>
+    <div id="data-stats" style="margin-top: 16px; color: var(--muted); font-size: 13px;"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA MODEL & STORAGE
+============================================================ */
+const STORAGE_KEY = 'cut76_data_v1';
+const START_WEIGHT = 87.5;
+const GOAL_WEIGHT = 76.0;
+const TOTAL_WEEKS = 20;
+
+const DEFAULT_EXERCISES = {
+  'Push': [
+    { ex: 'Flat Barbell Bench Press', target: '4×5-7', sets: 4, rpe: 8 },
+    { ex: 'Incline DB Press', target: '3×8-10', sets: 3, rpe: 8 },
+    { ex: 'Seated Overhead Press', target: '3×6-8', sets: 3, rpe: 8 },
+    { ex: 'Cable Lateral Raise', target: '4×12-15', sets: 4, rpe: 9 },
+    { ex: 'Rope Pushdown', target: '3×10-12', sets: 3, rpe: 9 },
+    { ex: 'Overhead Triceps Extension', target: '3×10-12', sets: 3, rpe: 9 }
+  ],
+  'Pull': [
+    { ex: 'Weighted Pull-ups', target: '4×6-8', sets: 4, rpe: 8 },
+    { ex: 'Barbell Row', target: '4×6-8', sets: 4, rpe: 8 },
+    { ex: 'Seated Cable Row', target: '3×8-10', sets: 3, rpe: 8 },
+    { ex: 'Face Pulls', target: '4×12-15', sets: 4, rpe: 9 },
+    { ex: 'Barbell Curl', target: '3×8-10', sets: 3, rpe: 9 },
+    { ex: 'Incline DB Curl', target: '3×10-12', sets: 3, rpe: 9 }
+  ],
+  'Legs-Quad': [
+    { ex: 'Back Squat', target: '4×5-7', sets: 4, rpe: 8 },
+    { ex: 'Leg Press', target: '3×10-12', sets: 3, rpe: 8 },
+    { ex: 'Walking Lunges', target: '3×10/leg', sets: 3, rpe: 8 },
+    { ex: 'Leg Extension', target: '3×12-15', sets: 3, rpe: 9 },
+    { ex: 'Standing Calf Raise', target: '4×10-12', sets: 4, rpe: 9 },
+    { ex: 'Hanging Leg Raise', target: '3×12-15', sets: 3, rpe: 9 }
+  ],
+  'Upper': [
+    { ex: 'Incline Barbell Bench', target: '4×6-8', sets: 4, rpe: 8 },
+    { ex: 'Chest-Supported Row', target: '4×8-10', sets: 4, rpe: 8 },
+    { ex: 'DB Shoulder Press', target: '3×8-10', sets: 3, rpe: 8 },
+    { ex: 'Wide-grip Lat Pulldown', target: '3×10-12', sets: 3, rpe: 9 },
+    { ex: 'Cable Fly', target: '3×12-15', sets: 3, rpe: 9 },
+    { ex: 'Hammer Curl + Skullcrushers SS', target: '3×10-12', sets: 3, rpe: 9 }
+  ],
+  'Lower-Post': [
+    { ex: 'Romanian Deadlift', target: '4×6-8', sets: 4, rpe: 8 },
+    { ex: 'Hack Squat / Front Squat', target: '3×8-10', sets: 3, rpe: 8 },
+    { ex: 'Bulgarian Split Squat', target: '3×8/leg', sets: 3, rpe: 8 },
+    { ex: 'Lying Leg Curl', target: '3×10-12', sets: 3, rpe: 9 },
+    { ex: 'Seated Calf Raise', target: '4×12-15', sets: 4, rpe: 9 },
+    { ex: 'Cable Crunch', target: '3×12-15', sets: 3, rpe: 9 }
+  ]
+};
+
+// Editable plan — pulled from saved data, falls back to default
+let EXERCISES = JSON.parse(JSON.stringify(DEFAULT_EXERCISES));
+
+const CHECKLIST_DAYS = ['Mon-Push','Tue-Pull','Wed-Legs','Thu-Upper','Fri-Lower','Sat-Cardio','Sun-Rest'];
+const CHECKLIST_ITEMS = ['Trained','Protein','Steps 8k','Sleep 7h+','Weighed','Logged'];
+
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SESSION_OPTIONS = ['Push','Pull','Legs-Quad','Upper','Lower-Post','Cardio','Rest'];
+const SESSION_LABELS = {
+  'Push': 'Push (Chest / Shoulders / Tri)',
+  'Pull': 'Pull (Back / Biceps)',
+  'Legs-Quad': 'Legs — Quad-focus',
+  'Upper': 'Upper (Hypertrophy)',
+  'Lower-Post': 'Lower — Posterior chain',
+  'Cardio': 'Cardio / Active Rest',
+  'Rest': 'Full Rest Day'
+};
+const DEFAULT_SCHEDULE = {
+  Mon: 'Push',
+  Tue: 'Pull',
+  Wed: 'Legs-Quad',
+  Thu: 'Rest',
+  Fri: 'Upper',
+  Sat: 'Lower-Post',
+  Sun: 'Cardio'
+};
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return {
+    weights: [],
+    workouts: {},
+    checklist: {},
+    reviews: {},
+    schedule: { ...DEFAULT_SCHEDULE },
+    exercises: JSON.parse(JSON.stringify(DEFAULT_EXERCISES))
+  };
+  try {
+    const d = JSON.parse(raw);
+    if (!d.schedule) d.schedule = { ...DEFAULT_SCHEDULE };
+    if (!d.exercises) d.exercises = JSON.parse(JSON.stringify(DEFAULT_EXERCISES));
+    return d;
+  } catch {
+    return {
+      weights: [], workouts: {}, checklist: {}, reviews: {},
+      schedule: { ...DEFAULT_SCHEDULE },
+      exercises: JSON.parse(JSON.stringify(DEFAULT_EXERCISES))
+    };
+  }
+}
+function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+let DATA = loadData();
+EXERCISES = DATA.exercises;
+
+/* ============================================================
+   TABS
+============================================================ */
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'dashboard') refreshDashboard();
+    if (btn.dataset.tab === 'workout') renderWorkoutLog();
+    if (btn.dataset.tab === 'weight') renderWeightTable();
+    if (btn.dataset.tab === 'checklist') renderChecklist();
+    if (btn.dataset.tab === 'review') renderReview();
+    if (btn.dataset.tab === 'schedule') renderSchedule();
+    if (btn.dataset.tab === 'progress') renderProgressTab();
+    if (btn.dataset.tab === 'backup') renderBackupTab();
+    if (btn.dataset.tab === 'data') renderDataStats();
+  };
+});
+
+/* ============================================================
+   POPULATE WEEK DROPDOWNS
+============================================================ */
+function populateWeekDropdowns() {
+  ['workout-week','checklist-week','review-week'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    for (let w = 1; w <= TOTAL_WEEKS; w++) {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = `Week ${w}` + (w === 8 || w === 16 ? ' (Deload)' : '');
+      sel.appendChild(opt);
+    }
+  });
+}
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+function refreshDashboard() {
+  refreshTodayCard();
+  const weights = [...DATA.weights].sort((a,b) => a.date.localeCompare(b.date));
+  const latest = weights.length ? weights[weights.length-1].weight : null;
+  const current = latest !== null ? latest : START_WEIGHT;
+
+  document.getElementById('current-weight').textContent = latest !== null ? latest.toFixed(1) + ' kg' : '—';
+
+  const lost = START_WEIGHT - current;
+  const totalToLose = START_WEIGHT - GOAL_WEIGHT;
+  const pct = Math.max(0, Math.min(100, (lost / totalToLose) * 100));
+  const fill = document.getElementById('goal-progress');
+  fill.style.width = pct + '%';
+  fill.textContent = pct.toFixed(1) + '%';
+
+  document.getElementById('to-go').textContent = Math.max(0, current - GOAL_WEIGHT).toFixed(1) + ' kg';
+
+  // 7-day avg
+  const last7 = weights.slice(-7);
+  if (last7.length) {
+    const avg = last7.reduce((s,w) => s + w.weight, 0) / last7.length;
+    document.getElementById('avg-7d').textContent = avg.toFixed(2) + ' kg';
+    if (weights.length >= 14) {
+      const prev7 = weights.slice(-14, -7);
+      const prevAvg = prev7.reduce((s,w) => s + w.weight, 0) / prev7.length;
+      const diff = avg - prevAvg;
+      const arrow = diff < 0 ? '↓' : (diff > 0 ? '↑' : '→');
+      const color = diff < 0 ? 'var(--accent)' : 'var(--danger)';
+      document.getElementById('trend-7d').innerHTML =
+        `<span style="color:${color}">${arrow} ${Math.abs(diff).toFixed(2)} kg vs prev week</span>`;
+    } else {
+      document.getElementById('trend-7d').textContent = `Need ${14 - weights.length} more days for trend`;
+    }
+  } else {
+    document.getElementById('avg-7d').textContent = '—';
+  }
+
+  // Streak: count consecutive days from today backwards where checklist 'Trained' OR rest day was hit
+  document.getElementById('streak').innerHTML = computeStreak() + ' <span class="streak-flame">🔥</span>';
+
+  // Sessions this week
+  sessionsThisWeek();
+
+  // Adherence last 14 days
+  document.getElementById('adherence').textContent = adherenceLast14() + '%';
+
+  drawChart();
+}
+
+function computeStreak() {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const key = checklistKeyForDate(d);
+    if (!key) break;
+    const cell = DATA.checklist[key];
+    if (cell && cell['Trained']) streak++;
+    else if (cell && cell['_rest']) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function checklistKeyForDate(date) {
+  // Find the week/day combination matching this date by approximation: not strict; uses Mon-anchored weeks
+  // We just check if any checklist entry exists matching this ISO date stored alongside
+  // Simpler: scan stored entries
+  const iso = date.toISOString().slice(0,10);
+  for (const [k, v] of Object.entries(DATA.checklist)) {
+    if (v._date === iso) return k;
+  }
+  return null;
+}
+
+function sessionsThisWeek() {
+  const today = new Date();
+  const dow = (today.getDay() + 6) % 7; // Mon=0
+  const monday = new Date(today); monday.setDate(today.getDate() - dow);
+  let count = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const dShort = DAY_NAMES[i];
+    const session = DATA.schedule[dShort];
+    // only count actual training days (not Rest / Cardio)
+    if (session === 'Rest' || session === 'Cardio') continue;
+    const iso = d.toISOString().slice(0,10);
+    for (const v of Object.values(DATA.checklist)) {
+      if (v._date === iso && v['Trained']) { count++; break; }
+    }
+  }
+  // total training days per week from schedule
+  const total = Object.values(DATA.schedule).filter(s => s !== 'Rest' && s !== 'Cardio').length;
+  document.getElementById('sessions-week').textContent = count + ' / ' + total;
+  return count;
+}
+
+function adherenceLast14() {
+  const today = new Date();
+  let total = 0, hit = 0;
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const iso = d.toISOString().slice(0,10);
+    for (const v of Object.values(DATA.checklist)) {
+      if (v._date === iso) {
+        const score = CHECKLIST_ITEMS.filter(it => v[it]).length;
+        total += CHECKLIST_ITEMS.length;
+        hit += score;
+        break;
+      }
+    }
+  }
+  if (total === 0) return 0;
+  return Math.round((hit / total) * 100);
+}
+
+let chart = null;
+function drawChart() {
+  const ctx = document.getElementById('weightChart');
+  if (!ctx) return;
+  const weights = [...DATA.weights].sort((a,b) => a.date.localeCompare(b.date));
+  const labels = weights.map(w => w.date);
+  const values = weights.map(w => w.weight);
+  // 7-day moving average
+  const avg = values.map((_, i) => {
+    const slice = values.slice(Math.max(0, i-6), i+1);
+    return slice.reduce((s,v) => s+v, 0) / slice.length;
+  });
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Weight (kg)', data: values, borderColor: '#9ca3af', backgroundColor: 'transparent', pointRadius: 3, tension: 0.2 },
+        { label: '7-day Avg', data: avg, borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,0.1)', borderWidth: 3, fill: true, pointRadius: 0, tension: 0.3 },
+        { label: 'Goal', data: values.map(() => GOAL_WEIGHT), borderColor: '#f59e0b', borderDash: [6,6], pointRadius: 0, borderWidth: 2 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#e5e7eb' } } },
+      scales: {
+        x: { ticks: { color: '#9ca3af' }, grid: { color: '#2d3742' } },
+        y: { ticks: { color: '#9ca3af' }, grid: { color: '#2d3742' } }
+      }
+    }
+  });
+}
+
+function quickLogWeight() {
+  const v = parseFloat(document.getElementById('quick-weight').value);
+  if (isNaN(v)) { alert('Enter a weight'); return; }
+  const today = new Date().toISOString().slice(0,10);
+  const existing = DATA.weights.find(w => w.date === today);
+  if (existing) existing.weight = v;
+  else DATA.weights.push({ date: today, weight: v });
+  saveData(DATA);
+  document.getElementById('quick-weight').value = '';
+  refreshDashboard();
+}
+
+/* ============================================================
+   TODAY CARD
+============================================================ */
+function todayShortName() {
+  // Mon=0..Sun=6
+  return DAY_NAMES[(new Date().getDay() + 6) % 7];
+}
+
+function refreshTodayCard() {
+  const dShort = todayShortName();
+  const fullName = DAY_FULL[DAY_NAMES.indexOf(dShort)];
+  const dateObj = new Date();
+  const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+  document.getElementById('today-date').textContent = dateStr;
+
+  const session = DATA.schedule[dShort] || 'Rest';
+  const sessionEl = document.getElementById('today-session');
+  const metaEl = document.getElementById('today-meta');
+  const actionsEl = document.getElementById('today-actions');
+  sessionEl.className = 'today-session';
+
+  if (session === 'Rest') {
+    sessionEl.textContent = '🛌 Full Rest Day';
+    sessionEl.classList.add('rest');
+    metaEl.textContent = 'Recovery is when growth happens. Hit your protein, sleep 7+ hrs.';
+    actionsEl.innerHTML = `<button class="secondary" onclick="goTab('checklist')">Open Checklist</button>`;
+  } else if (session === 'Cardio') {
+    sessionEl.textContent = '🚶 Cardio / Active Rest';
+    sessionEl.classList.add('cardio');
+    metaEl.textContent = '30–40 min incline walk, zone 2. Optional weak-point work.';
+    actionsEl.innerHTML = `<button class="secondary" onclick="goTab('checklist')">Open Checklist</button>`;
+  } else {
+    sessionEl.textContent = '💪 ' + SESSION_LABELS[session];
+    const exCount = (EXERCISES[session] || []).length;
+    metaEl.textContent = `${exCount} exercises planned · Tap below to log your sets.`;
+    actionsEl.innerHTML = `
+      <button onclick="jumpToWorkout('${session}')">Open Today's Workout</button>
+      <button class="secondary" onclick="goTab('checklist')">Open Checklist</button>
+    `;
+  }
+}
+
+function goTab(tabName) {
+  document.querySelector(`.tab[data-tab="${tabName}"]`).click();
+}
+
+function jumpToWorkout(session) {
+  goTab('workout');
+  // Set session dropdown to today's session
+  const sel = document.getElementById('workout-session');
+  if (sel) {
+    sel.value = session;
+    // Set week to current ISO-week-since-start (best guess) — keep whatever is selected, default 1
+    renderWorkoutLog();
+  }
+}
+
+/* ============================================================
+   SCHEDULE EDITOR
+============================================================ */
+function renderSchedule() {
+  const today = todayShortName();
+  let html = '';
+  DAY_NAMES.forEach((d, i) => {
+    const cur = DATA.schedule[d] || 'Rest';
+    const isToday = d === today;
+    html += `<div class="sched-row${isToday ? ' today-row' : ''}">
+      <strong>${DAY_FULL[i]}${isToday ? ' (Today)' : ''}</strong>
+      <select data-day="${d}">
+        ${SESSION_OPTIONS.map(s => `<option value="${s}" ${s === cur ? 'selected' : ''}>${SESSION_LABELS[s]}</option>`).join('')}
+      </select>
+    </div>`;
+  });
+  document.getElementById('schedule-editor').innerHTML = html;
+}
+
+function saveScheduleAndRefresh() {
+  document.querySelectorAll('#schedule-editor select').forEach(sel => {
+    DATA.schedule[sel.dataset.day] = sel.value;
+  });
+  saveData(DATA);
+  alert('Schedule saved!');
+  renderSchedule();
+  refreshTodayCard();
+}
+
+function resetScheduleDefault() {
+  if (!confirm('Reset to default 6-day split?')) return;
+  DATA.schedule = { ...DEFAULT_SCHEDULE };
+  saveData(DATA);
+  renderSchedule();
+  refreshTodayCard();
+}
+
+/* ============================================================
+   WORKOUT LOG
+============================================================ */
+function renderWorkoutLog() {
+  const week = +document.getElementById('workout-week').value;
+  const session = document.getElementById('workout-session').value;
+  const key = `w${week}_${session}`;
+  const stored = DATA.workouts[key] || { date: '', sets: {} };
+  document.getElementById('workout-date').value = stored.date || '';
+
+  const isDeload = (week === 8 || week === 16);
+  const exList = EXERCISES[session];
+  let html = `<h2>Week ${week} — ${session}${isDeload ? ' <span style="color:var(--warn)">⚠ DELOAD WEEK (50% volume)</span>' : ''}</h2>`;
+  html += '<table><thead><tr><th>Exercise</th><th>Target</th><th>Set 1</th><th>Set 2</th><th>Set 3</th><th>Set 4</th><th>RPE</th><th>Notes</th></tr></thead><tbody>';
+  exList.forEach((e, idx) => {
+    const setData = stored.sets[idx] || { s1:'', s2:'', s3:'', s4:'', notes:'' };
+    const status = overloadStatus(e.ex, week, session);
+    const prev = getPreviousBest(e.ex, week, session);
+    let pill = '';
+    if (status === 'pr')      pill = '<span class="overload-pill overload-pr">🏆 PR</span>';
+    else if (status === 'up') pill = '<span class="overload-pill overload-up">↑ Progressing</span>';
+    else if (status === 'flat') pill = '<span class="overload-pill overload-flat">→ Maintained</span>';
+    else if (status === 'down') pill = '<span class="overload-pill overload-down">↓ Down</span>';
+    const hint = prev
+      ? `<span class="last-session-hint">Last: ${prev.topSet.weight}×${prev.topSet.reps} (e1RM ${prev.e1rm.toFixed(1)} kg, W${prev.week})</span>`
+      : '<span class="last-session-hint">No prior data — first session</span>';
+    html += `<tr${isDeload ? ' class="deload"' : ''}>
+      <td><strong>${e.ex}</strong>${pill}${hint}</td>
+      <td style="color:var(--muted)">${e.target}</td>
+      <td><input data-idx="${idx}" data-field="s1" value="${setData.s1||''}" placeholder="60×8" /></td>
+      <td><input data-idx="${idx}" data-field="s2" value="${setData.s2||''}" placeholder="60×8" /></td>
+      <td><input data-idx="${idx}" data-field="s3" value="${setData.s3||''}" placeholder="${e.sets >= 3 ? '60×8' : '—'}" ${e.sets < 3 ? 'disabled' : ''} /></td>
+      <td><input data-idx="${idx}" data-field="s4" value="${setData.s4||''}" placeholder="${e.sets >= 4 ? '60×8' : '—'}" ${e.sets < 4 ? 'disabled' : ''} /></td>
+      <td style="color:var(--muted)">${e.rpe}</td>
+      <td><input data-idx="${idx}" data-field="notes" value="${setData.notes||''}" placeholder="—" /></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  html += '<div class="save-status" id="workout-save-status">Auto-saves on change</div>';
+
+  document.getElementById('workout-table-container').innerHTML = html;
+
+  document.querySelectorAll('#workout-table-container input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = inp.dataset.idx;
+      const field = inp.dataset.field;
+      if (!DATA.workouts[key]) DATA.workouts[key] = { date: stored.date || '', sets: {} };
+      if (!DATA.workouts[key].sets[idx]) DATA.workouts[key].sets[idx] = {};
+      DATA.workouts[key].sets[idx][field] = inp.value;
+      saveData(DATA);
+      const el = document.getElementById('workout-save-status');
+      el.textContent = '✓ Saved';
+      el.classList.add('saved');
+      clearTimeout(window._saveTimer);
+      window._saveTimer = setTimeout(() => { el.textContent = 'Auto-saves on change'; el.classList.remove('saved'); }, 1500);
+    });
+    // Re-render pills/hints on blur (after user finishes editing a set)
+    if (inp.dataset.field && inp.dataset.field.startsWith('s')) {
+      inp.addEventListener('blur', () => {
+        const active = document.activeElement;
+        // Avoid re-render if focus moved to another set input (prevents flicker)
+        if (!active || !active.dataset || !active.dataset.field || !active.dataset.field.startsWith('s')) {
+          renderWorkoutLog();
+        }
+      });
+    }
+  });
+}
+
+function saveWorkoutDate() {
+  const week = +document.getElementById('workout-week').value;
+  const session = document.getElementById('workout-session').value;
+  const key = `w${week}_${session}`;
+  if (!DATA.workouts[key]) DATA.workouts[key] = { date: '', sets: {} };
+  DATA.workouts[key].date = document.getElementById('workout-date').value;
+  saveData(DATA);
+}
+
+/* ============================================================
+   PLAN EDITOR
+============================================================ */
+let _planDraft = null;
+
+function openPlanEditor() {
+  const session = document.getElementById('workout-session').value;
+  // Deep clone current session's exercise list into editable draft
+  _planDraft = JSON.parse(JSON.stringify(EXERCISES[session] || []));
+  document.getElementById('plan-editor-title').textContent = `Edit Plan — ${session}`;
+  document.getElementById('plan-editor-modal').style.display = 'flex';
+  renderPlanEditor();
+}
+
+function closePlanEditor() {
+  document.getElementById('plan-editor-modal').style.display = 'none';
+  _planDraft = null;
+}
+
+function renderPlanEditor() {
+  const list = document.getElementById('plan-editor-list');
+  let html = `<div class="plan-row" style="font-size:11px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">
+    <div></div><div>Exercise</div><div>Target (e.g. 3×8-10)</div><div>Sets</div><div>RPE</div><div></div>
+  </div>`;
+  _planDraft.forEach((e, i) => {
+    html += `<div class="plan-row">
+      <div class="drag-handle">≡</div>
+      <input type="text" data-idx="${i}" data-field="ex" value="${escapeHtml(e.ex)}" placeholder="Exercise name" />
+      <input type="text" data-idx="${i}" data-field="target" value="${escapeHtml(e.target)}" placeholder="3×8-10" />
+      <input type="number" data-idx="${i}" data-field="sets" value="${e.sets}" min="1" max="4" />
+      <input type="number" data-idx="${i}" data-field="rpe" value="${e.rpe}" min="5" max="10" />
+      <div class="move-btns">
+        <button onclick="movePlanRow(${i},-1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button onclick="movePlanRow(${i},1)" ${i === _planDraft.length - 1 ? 'disabled' : ''}>↓</button>
+        <button class="delete-btn" style="background:var(--danger);color:#fff" onclick="deletePlanRow(${i})">✕</button>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+
+  // Bind input events
+  list.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = +inp.dataset.idx;
+      const field = inp.dataset.field;
+      const val = (field === 'sets' || field === 'rpe') ? +inp.value : inp.value;
+      _planDraft[idx][field] = val;
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function movePlanRow(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= _planDraft.length) return;
+  [_planDraft[idx], _planDraft[newIdx]] = [_planDraft[newIdx], _planDraft[idx]];
+  renderPlanEditor();
+}
+
+function deletePlanRow(idx) {
+  if (!confirm(`Remove "${_planDraft[idx].ex}" from this session?`)) return;
+  _planDraft.splice(idx, 1);
+  renderPlanEditor();
+}
+
+function addPlanExercise() {
+  _planDraft.push({ ex: 'New Exercise', target: '3×8-10', sets: 3, rpe: 8 });
+  renderPlanEditor();
+  // Focus the new row's name input
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('#plan-editor-list input[data-field="ex"]');
+    if (inputs.length) {
+      const last = inputs[inputs.length - 1];
+      last.focus();
+      last.select();
+    }
+  }, 50);
+}
+
+function resetPlanForSession() {
+  const session = document.getElementById('workout-session').value;
+  if (!confirm(`Reset "${session}" exercises to default plan?`)) return;
+  _planDraft = JSON.parse(JSON.stringify(DEFAULT_EXERCISES[session] || []));
+  renderPlanEditor();
+}
+
+function savePlanEdits() {
+  // Validate
+  for (const e of _planDraft) {
+    if (!e.ex || !e.ex.trim()) { alert('Every exercise needs a name.'); return; }
+    if (!e.sets || e.sets < 1 || e.sets > 4) { alert('Sets must be 1–4.'); return; }
+  }
+  const session = document.getElementById('workout-session').value;
+  // Detect order/length changes — warn about logged data drift
+  const oldList = EXERCISES[session] || [];
+  const orderChanged = oldList.length !== _planDraft.length ||
+    oldList.some((e, i) => !_planDraft[i] || e.ex !== _planDraft[i].ex);
+  if (orderChanged) {
+    const hasLoggedData = Object.entries(DATA.workouts)
+      .some(([k, v]) => k.endsWith('_' + session) && v.sets && Object.keys(v.sets).length);
+    if (hasLoggedData && !confirm(
+      'You have logged sets for this session. Reordering or removing exercises may shift previously-logged data to the wrong row.\n\nContinue?'
+    )) return;
+  }
+  DATA.exercises[session] = _planDraft;
+  EXERCISES = DATA.exercises;
+  saveData(DATA);
+  closePlanEditor();
+  renderWorkoutLog();
+  alert('✓ Plan updated. Applies to all weeks going forward.');
+}
+
+/* ============================================================
+   WEIGHT TABLE
+============================================================ */
+function addWeight() {
+  const date = document.getElementById('weight-date').value;
+  const weight = parseFloat(document.getElementById('weight-value').value);
+  if (!date || isNaN(weight)) { alert('Enter date + weight'); return; }
+  const existing = DATA.weights.find(w => w.date === date);
+  if (existing) existing.weight = weight;
+  else DATA.weights.push({ date, weight });
+  saveData(DATA);
+  document.getElementById('weight-value').value = '';
+  renderWeightTable();
+}
+
+function renderWeightTable() {
+  const tbody = document.querySelector('#weight-table tbody');
+  const sorted = [...DATA.weights].sort((a,b) => b.date.localeCompare(a.date));
+  tbody.innerHTML = sorted.map((w, i) => {
+    const idx = sorted.length - 1 - i;
+    const asc = [...DATA.weights].sort((a,b) => a.date.localeCompare(b.date));
+    const last7 = asc.slice(Math.max(0, idx - 6), idx + 1);
+    const avg = last7.reduce((s,x) => s + x.weight, 0) / last7.length;
+    const delta = w.weight - START_WEIGHT;
+    const dColor = delta < 0 ? 'var(--accent)' : 'var(--danger)';
+    return `<tr>
+      <td>${w.date}</td>
+      <td><strong>${w.weight.toFixed(1)} kg</strong></td>
+      <td>${avg.toFixed(2)} kg</td>
+      <td style="color:${dColor}">${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg</td>
+      <td><button class="danger" onclick="deleteWeight('${w.date}')" style="padding:4px 8px;font-size:11px">Del</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('weight-date').value = new Date().toISOString().slice(0,10);
+}
+
+function deleteWeight(date) {
+  if (!confirm('Delete entry for ' + date + '?')) return;
+  DATA.weights = DATA.weights.filter(w => w.date !== date);
+  saveData(DATA);
+  renderWeightTable();
+}
+
+/* ============================================================
+   DAILY CHECKLIST
+============================================================ */
+function renderChecklist() {
+  const week = +document.getElementById('checklist-week').value;
+  const c = document.getElementById('checklist-container');
+  let html = '<div class="checklist-grid"><div class="header day-label">Day</div>';
+  CHECKLIST_ITEMS.forEach(it => html += `<div class="header">${it}</div>`);
+  html += '<div class="header">Score</div>';
+
+  // Build dynamic day labels from current schedule
+  const dynamicDays = DAY_NAMES.map(d => `${d}-${DATA.schedule[d] || 'Rest'}`);
+
+  dynamicDays.forEach((day, idx) => {
+    const dShort = DAY_NAMES[idx];
+    const session = DATA.schedule[dShort] || 'Rest';
+    const key = `w${week}_${day}`;
+    const cell = DATA.checklist[key] || {};
+    html += `<div class="day-label">${day}</div>`;
+    CHECKLIST_ITEMS.forEach(it => {
+      const checked = cell[it] ? 'checked' : '';
+      html += `<div><input type="checkbox" ${checked} onchange="toggleCheck('${key}','${it}',this.checked,'${dShort}',${week})" /></div>`;
+    });
+    const score = CHECKLIST_ITEMS.filter(it => cell[it]).length;
+    const cls = score >= 5 ? 'score-6' : (score >= 3 ? 'score-4' : 'score-low');
+    html += `<div><span class="score-badge ${cls}" id="score-${key}">${score}/6</span></div>`;
+  });
+  html += '</div>';
+  html += '<div style="margin-top: 16px;"><label>Date for this week (Monday)</label><input type="date" id="week-monday" onchange="setWeekDates(' + week + ')" /></div>';
+  c.innerHTML = html;
+
+  // Pre-fill monday if exists — use dynamic key
+  const mondayKey = `w${week}_${dynamicDays[0]}`;
+  if (DATA.checklist[mondayKey] && DATA.checklist[mondayKey]._date) {
+    document.getElementById('week-monday').value = DATA.checklist[mondayKey]._date;
+  }
+}
+
+function toggleCheck(key, item, checked, dShort, week) {
+  if (!DATA.checklist[key]) DATA.checklist[key] = {};
+  DATA.checklist[key][item] = checked;
+  // Mark rest-day automatic flag based on scheduled session
+  const session = DATA.schedule[dShort];
+  if (session === 'Rest') DATA.checklist[key]._rest = true;
+  saveData(DATA);
+  // Update score badge
+  const score = CHECKLIST_ITEMS.filter(it => DATA.checklist[key][it]).length;
+  const badge = document.getElementById('score-' + key);
+  badge.textContent = score + '/6';
+  badge.className = 'score-badge ' + (score >= 5 ? 'score-6' : (score >= 3 ? 'score-4' : 'score-low'));
+}
+
+function setWeekDates(week) {
+  const monday = document.getElementById('week-monday').value;
+  if (!monday) return;
+  const base = new Date(monday);
+  const dynamicDays = DAY_NAMES.map(d => `${d}-${DATA.schedule[d] || 'Rest'}`);
+  dynamicDays.forEach((day, i) => {
+    const key = `w${week}_${day}`;
+    if (!DATA.checklist[key]) DATA.checklist[key] = {};
+    const d = new Date(base); d.setDate(base.getDate() + i);
+    DATA.checklist[key]._date = d.toISOString().slice(0,10);
+  });
+  saveData(DATA);
+}
+
+/* ============================================================
+   WEEKLY REVIEW
+============================================================ */
+const REVIEW_FIELDS = [
+  { id: 'sessions', label: 'Sessions Completed (out of 5)', type: 'number' },
+  { id: 'avgWeight', label: 'Avg Weight This Week (kg)', type: 'number' },
+  { id: 'progressed', label: 'Lifts that Progressed (which ones?)', type: 'text' },
+  { id: 'energy', label: 'Energy Level (1-10)', type: 'number' },
+  { id: 'sleep', label: 'Sleep Quality (1-10)', type: 'number' },
+  { id: 'adherence', label: 'Adherence % (target 80%)', type: 'number' },
+  { id: 'win', label: 'Win of the Week', type: 'textarea' },
+  { id: 'fix', label: 'Fix for Next Week', type: 'textarea' }
+];
+
+function renderReview() {
+  const week = +document.getElementById('review-week').value;
+  const data = DATA.reviews[week] || {};
+  let html = `<h2>Week ${week} Review</h2>`;
+  REVIEW_FIELDS.forEach(f => {
+    html += `<div style="margin-bottom: 12px;"><label>${f.label}</label>`;
+    if (f.type === 'textarea') {
+      html += `<textarea rows="2" data-field="${f.id}">${data[f.id] || ''}</textarea>`;
+    } else {
+      html += `<input type="${f.type}" data-field="${f.id}" value="${data[f.id] || ''}" />`;
+    }
+    html += '</div>';
+  });
+  html += '<div class="save-status" id="review-status">Auto-saves on change</div>';
+  document.getElementById('review-form').innerHTML = html;
+
+  document.querySelectorAll('#review-form [data-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      if (!DATA.reviews[week]) DATA.reviews[week] = {};
+      DATA.reviews[week][el.dataset.field] = el.value;
+      saveData(DATA);
+      const s = document.getElementById('review-status');
+      s.textContent = '✓ Saved'; s.classList.add('saved');
+      clearTimeout(window._rTimer);
+      window._rTimer = setTimeout(() => { s.textContent = 'Auto-saves on change'; s.classList.remove('saved'); }, 1500);
+    });
+  });
+}
+
+/* ============================================================
+   DATA EXPORT/IMPORT
+============================================================ */
+function exportData() {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cut76-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      DATA = JSON.parse(e.target.result);
+      if (!DATA.schedule) DATA.schedule = { ...DEFAULT_SCHEDULE };
+      if (!DATA.exercises) DATA.exercises = JSON.parse(JSON.stringify(DEFAULT_EXERCISES));
+      EXERCISES = DATA.exercises;
+      saveData(DATA);
+      alert('Imported successfully!');
+      refreshDashboard();
+      renderDataStats();
+    } catch (err) {
+      alert('Invalid file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAll() {
+  if (!confirm('This will erase ALL data. Continue?')) return;
+  if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  DATA = { weights: [], workouts: {}, checklist: {}, reviews: {}, schedule: { ...DEFAULT_SCHEDULE }, exercises: JSON.parse(JSON.stringify(DEFAULT_EXERCISES)) };
+  EXERCISES = DATA.exercises;
+  saveData(DATA);
+  refreshDashboard();
+  renderDataStats();
+  alert('All data cleared.');
+}
+
+function renderDataStats() {
+  const stats = `
+    <strong>Storage:</strong><br/>
+    • ${DATA.weights.length} weight entries<br/>
+    • ${Object.keys(DATA.workouts).length} workout sessions logged<br/>
+    • ${Object.keys(DATA.checklist).length} checklist days<br/>
+    • ${Object.keys(DATA.reviews).length} weekly reviews<br/>
+    • Approx size: ${(JSON.stringify(DATA).length / 1024).toFixed(1)} KB
+  `;
+  document.getElementById('data-stats').innerHTML = stats;
+}
+
+/* ============================================================
+   PROGRESSIVE OVERLOAD ENGINE
+============================================================ */
+// Parse set strings like "60x8", "60×8", "60*8", "60kg x 8", "60 x 8"
+function parseSet(str) {
+  if (!str) return null;
+  const cleaned = String(str).toLowerCase().replace(/kg/g, '').replace(/\s+/g, '');
+  const m = cleaned.match(/^(\d+(?:\.\d+)?)[x×*](\d+)$/);
+  if (!m) return null;
+  const w = parseFloat(m[1]);
+  const r = parseInt(m[2], 10);
+  if (isNaN(w) || isNaN(r) || r <= 0) return null;
+  return { weight: w, reps: r };
+}
+
+// Epley formula for estimated 1RM
+function estimate1RM(weight, reps) {
+  if (reps === 1) return weight;
+  return weight * (1 + reps / 30);
+}
+
+// Get all logged sets for a given exercise across every workout
+function getExerciseHistory(exerciseName) {
+  const history = [];
+  for (const [key, sess] of Object.entries(DATA.workouts)) {
+    if (!sess.sets) continue;
+    // key format: w{N}_{Session}
+    const match = key.match(/^w(\d+)_(.+)$/);
+    if (!match) continue;
+    const weekNum = parseInt(match[1]);
+    const sessionType = match[2];
+    const exList = EXERCISES[sessionType];
+    if (!exList) continue;
+    exList.forEach((ex, idx) => {
+      if (ex.ex !== exerciseName) return;
+      const setData = sess.sets[idx];
+      if (!setData) return;
+      const sets = ['s1','s2','s3','s4'].map(f => parseSet(setData[f])).filter(Boolean);
+      if (!sets.length) return;
+      const top = sets.reduce((best, s) =>
+        estimate1RM(s.weight, s.reps) > estimate1RM(best.weight, best.reps) ? s : best
+      );
+      const volume = sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
+      history.push({
+        week: weekNum,
+        session: sessionType,
+        date: sess.date || '',
+        sets,
+        topSet: top,
+        e1rm: estimate1RM(top.weight, top.reps),
+        volume
+      });
+    });
+  }
+  // Sort by week, then by date if available
+  history.sort((a, b) => a.week - b.week || (a.date || '').localeCompare(b.date || ''));
+  return history;
+}
+
+// Get all unique exercises from EXERCISES map
+function getAllExercises() {
+  const set = new Set();
+  Object.values(EXERCISES).forEach(arr => arr.forEach(e => set.add(e.ex)));
+  return [...set].sort();
+}
+
+// Compute previous-best summary for an exercise (for overload indicator)
+function getPreviousBest(exerciseName, currentWeek, currentSession) {
+  const hist = getExerciseHistory(exerciseName);
+  // Find the latest entry BEFORE the currently-viewed session
+  const prior = hist.filter(h =>
+    h.week < currentWeek || (h.week === currentWeek && h.session !== currentSession)
+  );
+  if (!prior.length) return null;
+  // Sort by week desc, take the most recent prior session
+  prior.sort((a, b) => b.week - a.week);
+  return prior[0];
+}
+
+// Compute current session's best for comparison
+function getCurrentSessionBest(exerciseName, week, session) {
+  const key = `w${week}_${session}`;
+  const sess = DATA.workouts[key];
+  if (!sess || !sess.sets) return null;
+  const exList = EXERCISES[session];
+  const idx = exList.findIndex(e => e.ex === exerciseName);
+  if (idx < 0) return null;
+  const setData = sess.sets[idx];
+  if (!setData) return null;
+  const sets = ['s1','s2','s3','s4'].map(f => parseSet(setData[f])).filter(Boolean);
+  if (!sets.length) return null;
+  const top = sets.reduce((best, s) =>
+    estimate1RM(s.weight, s.reps) > estimate1RM(best.weight, best.reps) ? s : best
+  );
+  return { topSet: top, e1rm: estimate1RM(top.weight, top.reps) };
+}
+
+// Returns 'pr' | 'up' | 'flat' | 'down' | null
+function overloadStatus(exerciseName, week, session) {
+  const prev = getPreviousBest(exerciseName, week, session);
+  const curr = getCurrentSessionBest(exerciseName, week, session);
+  if (!curr) return null;
+  if (!prev) return 'up'; // first ever entry
+  // PR check: highest e1rm across ALL prior sessions
+  const allPrior = getExerciseHistory(exerciseName).filter(h =>
+    h.week < week || (h.week === week && h.session !== session)
+  );
+  const allTimeBest = allPrior.length ? Math.max(...allPrior.map(h => h.e1rm)) : 0;
+  if (curr.e1rm > allTimeBest + 0.5) return 'pr';
+  const diff = curr.e1rm - prev.e1rm;
+  if (diff > 0.5) return 'up';
+  if (diff < -0.5) return 'down';
+  return 'flat';
+}
+
+function getAllPRs() {
+  const prs = [];
+  getAllExercises().forEach(ex => {
+    const hist = getExerciseHistory(ex);
+    if (!hist.length) return;
+    const best = hist.reduce((b, h) => h.e1rm > b.e1rm ? h : b);
+    prs.push({ exercise: ex, ...best });
+  });
+  return prs.sort((a, b) => b.e1rm - a.e1rm);
+}
+
+/* ============================================================
+   PROGRESS TAB
+============================================================ */
+function renderProgressTab() {
+  // Populate exercise dropdown
+  const sel = document.getElementById('progress-exercise');
+  const exercises = getAllExercises();
+  sel.innerHTML = exercises.map(e => `<option value="${e}">${e}</option>`).join('');
+
+  // PR count
+  const prs = getAllPRs().filter(p => p.e1rm > 0);
+  document.getElementById('pr-count').textContent = prs.length;
+  if (prs.length) {
+    const top = prs[0];
+    document.getElementById('pr-recent').textContent =
+      `Best: ${top.exercise} (e1RM ${top.e1rm.toFixed(1)} kg)`;
+  } else {
+    document.getElementById('pr-recent').textContent = 'Log workouts to see PRs';
+  }
+
+  // Sessions logged
+  const logged = Object.values(DATA.workouts).filter(s =>
+    s.sets && Object.values(s.sets).some(set =>
+      ['s1','s2','s3','s4'].some(f => parseSet(set[f]))
+    )
+  ).length;
+  document.getElementById('sessions-logged').textContent = logged;
+
+  // Strength retention: avg e1RM trend on key compounds
+  const compounds = ['Flat Barbell Bench Press', 'Back Squat', 'Romanian Deadlift', 'Barbell Row'];
+  let trends = [];
+  compounds.forEach(ex => {
+    const h = getExerciseHistory(ex);
+    if (h.length < 2) return;
+    const first = h[0].e1rm;
+    const last = h[h.length - 1].e1rm;
+    if (first > 0) trends.push((last - first) / first * 100);
+  });
+  const retEl = document.getElementById('strength-retention');
+  if (trends.length) {
+    const avg = trends.reduce((a, b) => a + b, 0) / trends.length;
+    retEl.textContent = (avg >= 0 ? '+' : '') + avg.toFixed(1) + '%';
+    retEl.className = 'card-value ' + (avg >= -2 ? 'green' : (avg >= -5 ? 'amber' : 'red'));
+  } else {
+    retEl.textContent = '—';
+    retEl.className = 'card-value';
+  }
+
+  // PR table
+  const tbody = document.querySelector('#pr-table tbody');
+  tbody.innerHTML = prs.length ? prs.map(p => `
+    <tr>
+      <td><strong>${p.exercise}</strong></td>
+      <td>${p.topSet.weight} kg × ${p.topSet.reps}</td>
+      <td style="color: var(--accent);"><strong>${p.e1rm.toFixed(1)} kg</strong></td>
+      <td style="color: var(--muted);">${p.date || `Week ${p.week}`}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No data yet — log some workouts.</td></tr>';
+
+  renderProgressChart();
+}
+
+let progressChart = null;
+function renderProgressChart() {
+  const exName = document.getElementById('progress-exercise').value;
+  const metric = document.getElementById('progress-metric').value;
+  if (!exName) return;
+  const hist = getExerciseHistory(exName);
+
+  const labels = hist.map(h => h.date || `W${h.week}`);
+  let values, label;
+  if (metric === 'e1rm') { values = hist.map(h => h.e1rm); label = 'Estimated 1RM (kg)'; }
+  else if (metric === 'topSet') { values = hist.map(h => h.topSet.weight); label = 'Top Set Weight (kg)'; }
+  else { values = hist.map(h => h.volume); label = 'Total Volume (kg)'; }
+
+  if (progressChart) progressChart.destroy();
+  const ctx = document.getElementById('progressChart');
+  progressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data: values,
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74,222,128,0.12)',
+        fill: true,
+        tension: 0.25,
+        pointRadius: 4,
+        pointBackgroundColor: '#4ade80'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#e5e7eb' } } },
+      scales: {
+        x: { ticks: { color: '#9ca3af' }, grid: { color: '#2d3742' } },
+        y: { ticks: { color: '#9ca3af' }, grid: { color: '#2d3742' } }
+      }
+    }
+  });
+
+  // Summary
+  const sum = document.getElementById('progress-summary');
+  if (hist.length < 2) {
+    sum.textContent = hist.length ? 'Need at least 2 sessions to see trend.' : 'No data yet for this exercise.';
+  } else {
+    const first = values[0], last = values[values.length - 1];
+    const diff = last - first;
+    const pct = first > 0 ? (diff / first) * 100 : 0;
+    const arrow = diff > 0 ? '↑' : (diff < 0 ? '↓' : '→');
+    const color = diff > 0 ? 'var(--accent)' : (diff < 0 ? 'var(--danger)' : 'var(--muted)');
+    sum.innerHTML = `<span style="color:${color}; font-weight:600">${arrow} ${Math.abs(diff).toFixed(1)} kg (${Math.abs(pct).toFixed(1)}%)</span> over ${hist.length} sessions · Latest top set: <strong>${hist[hist.length-1].topSet.weight} kg × ${hist[hist.length-1].topSet.reps}</strong>`;
+  }
+}
+
+/* ============================================================
+   GOOGLE DRIVE BACKUP
+============================================================ */
+const GDRIVE_KEY = 'cut76_gdrive_v1';
+const GDRIVE_BACKUP_FILENAME = 'cut76-fitness-backup.json';
+let gdriveTokenClient = null;
+let gdriveAccessToken = null;
+let gapiInitialized = false;
+
+function loadGdriveSettings() {
+  try { return JSON.parse(localStorage.getItem(GDRIVE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveGdriveSettings(s) { localStorage.setItem(GDRIVE_KEY, JSON.stringify(s)); }
+
+function isFileProtocol() {
+  return location.protocol === 'file:';
+}
+
+function renderBackupTab() {
+  const settings = loadGdriveSettings();
+  document.getElementById('gdrive-warning').style.display = isFileProtocol() ? 'block' : 'none';
+  document.getElementById('gdrive-client-id').value = settings.clientId || '';
+  document.getElementById('auto-backup-toggle').checked = !!settings.autoBackup;
+  document.getElementById('gdrive-last-backup').textContent =
+    settings.lastBackup ? `Last backup: ${new Date(settings.lastBackup).toLocaleString()}` : 'No backups yet.';
+
+  if (gdriveAccessToken) {
+    document.getElementById('gdrive-status').innerHTML =
+      `<span class="gdrive-status-ok">✓ Signed in${settings.userEmail ? ' as <strong>' + settings.userEmail + '</strong>' : ''}</span>`;
+    document.getElementById('gdrive-signin-btn').style.display = 'none';
+    document.getElementById('gdrive-signout-btn').style.display = '';
+    document.getElementById('gdrive-backup-btn').disabled = false;
+    document.getElementById('gdrive-restore-btn').disabled = false;
+  } else {
+    document.getElementById('gdrive-status').textContent = 'Not signed in.';
+    document.getElementById('gdrive-signin-btn').style.display = '';
+    document.getElementById('gdrive-signout-btn').style.display = 'none';
+    document.getElementById('gdrive-backup-btn').disabled = true;
+    document.getElementById('gdrive-restore-btn').disabled = true;
+  }
+}
+
+function saveClientId() {
+  const id = document.getElementById('gdrive-client-id').value.trim();
+  if (!id) { alert('Paste your OAuth Client ID first'); return; }
+  const s = loadGdriveSettings();
+  s.clientId = id;
+  saveGdriveSettings(s);
+  alert('Client ID saved. Click "Sign in with Google" to authenticate.');
+}
+
+async function initGapi() {
+  if (gapiInitialized) return;
+  await new Promise(res => gapi.load('client', res));
+  await gapi.client.init({ discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
+  gapiInitialized = true;
+}
+
+function gdriveSignIn() {
+  if (isFileProtocol()) {
+    alert('Google OAuth blocks file:// URLs. Open this page via VS Code Live Server or host it (GitHub Pages).');
+    return;
+  }
+  const settings = loadGdriveSettings();
+  if (!settings.clientId) { alert('Save your OAuth Client ID first.'); return; }
+  if (typeof google === 'undefined' || !google.accounts) {
+    alert('Google library not loaded yet. Wait a second and try again.');
+    return;
+  }
+  gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: settings.clientId,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    callback: async (resp) => {
+      if (resp.error) { alert('Auth failed: ' + resp.error); return; }
+      gdriveAccessToken = resp.access_token;
+      await initGapi();
+      gapi.client.setToken({ access_token: gdriveAccessToken });
+      // Try to fetch user email (optional)
+      try {
+        const ui = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + gdriveAccessToken }
+        }).then(r => r.json());
+        const s = loadGdriveSettings();
+        s.userEmail = ui.email;
+        s.tokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
+        saveGdriveSettings(s);
+      } catch {}
+      renderBackupTab();
+    }
+  });
+  gdriveTokenClient.requestAccessToken({ prompt: '' });
+}
+
+function gdriveSignOut() {
+  if (gdriveAccessToken) {
+    google.accounts.oauth2.revoke(gdriveAccessToken, () => {});
+  }
+  gdriveAccessToken = null;
+  const s = loadGdriveSettings();
+  delete s.userEmail;
+  delete s.tokenExpiry;
+  saveGdriveSettings(s);
+  renderBackupTab();
+}
+
+async function gdriveFindBackupFile() {
+  const r = await gapi.client.drive.files.list({
+    q: `name='${GDRIVE_BACKUP_FILENAME}' and trashed=false`,
+    spaces: 'drive',
+    fields: 'files(id, name, modifiedTime)'
+  });
+  return r.result.files && r.result.files.length ? r.result.files[0] : null;
+}
+
+async function gdriveBackupNow() {
+  if (!gdriveAccessToken) { alert('Sign in first'); return; }
+  document.getElementById('gdrive-backup-btn').disabled = true;
+  document.getElementById('gdrive-backup-btn').textContent = 'Backing up...';
+  try {
+    const content = JSON.stringify({ ...DATA, _backupAt: new Date().toISOString() }, null, 2);
+    const blob = new Blob([content], { type: 'application/json' });
+
+    const existing = await gdriveFindBackupFile();
+    const metadata = { name: GDRIVE_BACKUP_FILENAME, mimeType: 'application/json' };
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('file', blob);
+
+    const url = existing
+      ? `https://www.googleapis.com/upload/drive/v3/files/${existing.id}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    const method = existing ? 'PATCH' : 'POST';
+
+    const resp = await fetch(url, {
+      method,
+      headers: { Authorization: 'Bearer ' + gdriveAccessToken },
+      body: form
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    const s = loadGdriveSettings();
+    s.lastBackup = Date.now();
+    saveGdriveSettings(s);
+    alert('✓ Backup saved to your Google Drive (' + GDRIVE_BACKUP_FILENAME + ')');
+  } catch (e) {
+    alert('Backup failed: ' + e.message);
+  } finally {
+    document.getElementById('gdrive-backup-btn').disabled = false;
+    document.getElementById('gdrive-backup-btn').textContent = '📤 Backup Now';
+    renderBackupTab();
+  }
+}
+
+async function gdriveRestoreLatest() {
+  if (!gdriveAccessToken) { alert('Sign in first'); return; }
+  if (!confirm('This will OVERWRITE your current data with the latest Drive backup. Continue?')) return;
+  try {
+    const f = await gdriveFindBackupFile();
+    if (!f) { alert('No backup found in Drive.'); return; }
+    const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`, {
+      headers: { Authorization: 'Bearer ' + gdriveAccessToken }
+    });
+    const json = await resp.json();
+    delete json._backupAt;
+    DATA = json;
+    if (!DATA.schedule) DATA.schedule = { ...DEFAULT_SCHEDULE };
+    if (!DATA.exercises) DATA.exercises = JSON.parse(JSON.stringify(DEFAULT_EXERCISES));
+    EXERCISES = DATA.exercises;
+    saveData(DATA);
+    alert('✓ Restored from backup (' + new Date(f.modifiedTime).toLocaleString() + ')');
+    refreshDashboard();
+  } catch (e) {
+    alert('Restore failed: ' + e.message);
+  }
+}
+
+function toggleAutoBackup(on) {
+  const s = loadGdriveSettings();
+  s.autoBackup = on;
+  saveGdriveSettings(s);
+}
+
+// Run on load: if auto-backup is on, signed in, and last backup > 7 days ago → backup
+async function maybeAutoBackup() {
+  const s = loadGdriveSettings();
+  if (!s.autoBackup || !s.clientId) return;
+  if (isFileProtocol()) return;
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  if (s.lastBackup && Date.now() - s.lastBackup < weekMs) return;
+  // Need a token — try silent
+  if (typeof google === 'undefined' || !google.accounts) return;
+  gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: s.clientId,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    callback: async (resp) => {
+      if (resp.error || !resp.access_token) return;
+      gdriveAccessToken = resp.access_token;
+      await initGapi();
+      gapi.client.setToken({ access_token: gdriveAccessToken });
+      await gdriveBackupNow();
+    }
+  });
+  // Silent attempt
+  try { gdriveTokenClient.requestAccessToken({ prompt: 'none' }); } catch {}
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+populateWeekDropdowns();
+document.getElementById('weight-date').value = new Date().toISOString().slice(0,10);
+
+// Editable name -- persists in DATA.userName
+(function initUserName() {
+  const el = document.getElementById('user-name');
+  if (!el) return;
+  if (DATA.userName) el.textContent = DATA.userName;
+  else DATA.userName = el.textContent.trim();
+  document.title = DATA.userName + ' \u2014 Cut to 76kg';
+
+  const commit = () => {
+    const v = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!v) { el.textContent = DATA.userName || 'Vaishnav'; return; }
+    DATA.userName = v;
+    el.textContent = v;
+    saveData(DATA);
+    document.title = v + ' \u2014 Cut to 76kg';
+  };
+  el.addEventListener('blur', commit);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    if (e.key === 'Escape') { el.textContent = DATA.userName || 'Vaishnav'; el.blur(); }
+  });
+})();
+
+refreshDashboard();
+// Try silent auto-backup after a short delay (lets google libs load)
+setTimeout(maybeAutoBackup, 4000);
+</script>
+
+</body>
+</html>
