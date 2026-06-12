@@ -1711,18 +1711,23 @@ function gdriveSignOut() {
 }
 
 async function gdriveFindBackupFile() {
-  const r = await gapi.client.drive.files.list({
-    q: `name='${GDRIVE_BACKUP_FILENAME}' and trashed=false`,
-    spaces: 'drive',
-    fields: 'files(id, name, modifiedTime)'
+  const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent("name='" + GDRIVE_BACKUP_FILENAME + "' and trashed=false")}&spaces=drive&fields=files(id,name,modifiedTime)`;
+  const resp = await fetch(url, {
+    headers: { Authorization: 'Bearer ' + gdriveAccessToken }
   });
-  return r.result.files && r.result.files.length ? r.result.files[0] : null;
+  if (!resp.ok) {
+    const txt = await resp.text();
+    throw new Error('Drive list failed (HTTP ' + resp.status + '): ' + txt.slice(0, 200));
+  }
+  const json = await resp.json();
+  return json.files && json.files.length ? json.files[0] : null;
 }
 
 async function gdriveBackupNow() {
   if (!gdriveAccessToken) { alert('Sign in first'); return; }
-  document.getElementById('gdrive-backup-btn').disabled = true;
-  document.getElementById('gdrive-backup-btn').textContent = 'Backing up...';
+  const btn = document.getElementById('gdrive-backup-btn');
+  btn.disabled = true;
+  btn.textContent = 'Backing up...';
   try {
     const content = JSON.stringify({ ...DATA, _backupAt: new Date().toISOString() }, null, 2);
     const blob = new Blob([content], { type: 'application/json' });
@@ -1743,17 +1748,22 @@ async function gdriveBackupNow() {
       headers: { Authorization: 'Bearer ' + gdriveAccessToken },
       body: form
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error('Upload failed (HTTP ' + resp.status + '): ' + txt.slice(0, 300));
+    }
 
     const s = loadGdriveSettings();
     s.lastBackup = Date.now();
     saveGdriveSettings(s);
     alert('✓ Backup saved to your Google Drive (' + GDRIVE_BACKUP_FILENAME + ')');
   } catch (e) {
-    alert('Backup failed: ' + e.message);
+    console.error('Backup error:', e);
+    const msg = e && (e.message || e.toString()) || 'Unknown error';
+    alert('Backup failed:\n\n' + msg + '\n\nCheck browser console (F12) for details.');
   } finally {
-    document.getElementById('gdrive-backup-btn').disabled = false;
-    document.getElementById('gdrive-backup-btn').textContent = '📤 Backup Now';
+    btn.disabled = false;
+    btn.textContent = '📤 Backup Now';
     renderBackupTab();
   }
 }
